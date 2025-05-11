@@ -12,6 +12,7 @@ from modules.vocabulary_analyzer import analyze_vocabulary
 from modules.essay_scorer import score_essay
 from modules.feedback_generator import generate_feedback
 from modules.dataset_loader import get_sample_essays_from_dataset
+from modules.model_trainer import model_trainer
 
 # Function to convert numpy types to Python native types
 def convert_numpy_types(obj):
@@ -52,24 +53,24 @@ def analyze_essay():
     try:
         data = request.get_json()
         essay_text = data.get('essay', '')
-        
+
         if not essay_text:
             return jsonify({'error': 'No essay text provided'}), 400
-        
+
         logger.debug(f"Received essay with length: {len(essay_text)} characters")
-        
+
         # Create a thread for each analysis component
         grammar_future = executor.submit(check_grammar_spelling, essay_text)
         structure_future = executor.submit(analyze_sentence_structure, essay_text)
         coherence_future = executor.submit(analyze_coherence, essay_text)
         vocabulary_future = executor.submit(analyze_vocabulary, essay_text)
-        
+
         # Get results from all threads
         grammar_results = grammar_future.result()
         structure_results = structure_future.result()
         coherence_results = coherence_future.result()
         vocabulary_results = vocabulary_future.result()
-        
+
         # Calculate overall score based on component results
         score_results = score_essay(
             grammar_results,
@@ -77,7 +78,7 @@ def analyze_essay():
             coherence_results,
             vocabulary_results
         )
-        
+
         # Generate comprehensive feedback
         feedback = generate_feedback(
             essay_text,
@@ -87,12 +88,12 @@ def analyze_essay():
             vocabulary_results,
             score_results
         )
-        
+
         # Convert numpy types to native Python types for JSON serialization
         feedback = convert_numpy_types(feedback)
-        
+
         return jsonify(feedback)
-        
+
     except Exception as e:
         logger.error(f"Error analyzing essay: {str(e)}", exc_info=True)
         return jsonify({
@@ -104,7 +105,7 @@ def analyze_essay():
 def generate_thesis_endpoint():
     """
     Generate a thesis statement or summary based on the submitted essay
-    
+
     Returns:
         JSON with generated thesis statement and summary
     """
@@ -113,22 +114,22 @@ def generate_thesis_endpoint():
         essay_text = data.get('essay', '')
         style = data.get('style', 'academic')  # academic, concise, descriptive
         summary_length = data.get('summary_length', 'medium')  # short, medium, long
-        
+
         if not essay_text:
             return jsonify({'error': 'No essay text provided'}), 400
-        
+
         logger.debug(f"Generating thesis for essay with length: {len(essay_text)} characters")
-        
+
         # Import here to avoid circular imports
         from modules.thesis_generator import generate_thesis, generate_summary, identify_main_argument
-        
+
         # Get main argument information
         argument_info = identify_main_argument(essay_text)
-        
+
         # Generate thesis and summary
         thesis = generate_thesis(essay_text, style)
         summary = generate_summary(essay_text, summary_length)
-        
+
         # Prepare response
         response = {
             'thesis_statement': thesis,
@@ -137,7 +138,7 @@ def generate_thesis_endpoint():
             'keywords': argument_info['keywords'],
             'potential_topics': argument_info['potential_topics']
         }
-        
+
         return jsonify(response)
     except Exception as e:
         logger.error(f"Error generating thesis: {str(e)}", exc_info=True)
