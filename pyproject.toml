@@ -5,6 +5,7 @@ description = "Add your description here"
 requires-python = ">=3.12"
 dependencies = [
     "flask>=3.1.0",
+    "kagglehub>=0.3.12",
     "language-tool-python>=2.9.3",
     "nltk>=3.9.1",
     "numpy>=2.2.5",

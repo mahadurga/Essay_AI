@@ -19,7 +19,10 @@ def download_ielts_dataset():
         return path
     except Exception as e:
         logger.error(f"Error downloading dataset: {str(e)}")
-        raise
+        # Return local path if dataset exists
+        if os.path.exists('ielts_writing_dataset.csv'):
+            return 'ielts_writing_dataset.csv'
+        return None
 
 def load_ielts_dataset(path=None):
     """
