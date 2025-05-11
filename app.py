@@ -4,6 +4,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error, r2_score
 import numpy as np
+from flask import Flask, request, jsonify
 
 class SimpleModel:
     def __init__(self):
@@ -97,19 +98,33 @@ class SimpleModel:
             print(f"Error predicting the score: {e}")
             return None
 
-# Example usage:
-if __name__ == "__main__":
-    # Create an instance of the SimpleModel
-    simple_model = SimpleModel()
+app = Flask(__name__)
+model = SimpleModel()
 
-    # Train the model using the essay data
-    simple_model.train_model('ielts_writing_dataset.csv')
+# Train the model when app starts
+model.train_model('ielts_writing_dataset.csv')
 
-    # Example essay for prediction
-    example_essay = "Technology has greatly improved our lives. It has made communication easier and faster, and it has also provided us with access to a wealth of information. However, technology has also had some negative effects. It has made us more isolated and less active, and it has also led to new forms of crime."
+@app.route('/analyze', methods=['POST'])
+def analyze_essay():
+    try:
+        data = request.get_json()
+        essay_text = data.get('essay', '')
 
-    # Predict the score for the example essay
-    predicted_score = simple_model.predict_score(example_essay)
+        if not essay_text:
+            return jsonify({'error': 'No essay text provided'}), 400
 
-    if predicted_score is not None:
-        print(f"Predicted Overall Score: {predicted_score}")
+        score = model.predict_score(essay_text)
+
+        if score is None:
+            return jsonify({'error': 'Failed to predict score'}), 500
+
+        return jsonify({
+            'score': float(score),
+            'message': 'Analysis completed successfully'
+        })
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000)
