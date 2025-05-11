@@ -8,6 +8,8 @@
     <link href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css" rel="stylesheet">
     <!-- Chart.js for visualizations -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.css">
+    <!-- Google Fonts - Arial -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Arial:wght@400;700&display=swap">
     <!-- Custom CSS -->
     <link rel="stylesheet" href="/static/css/custom.css">
     <!-- Font Awesome for icons -->
@@ -15,7 +17,7 @@
 </head>
 <body>
     <!-- Header -->
-    <header class="bg-dark py-3">
+    <header style="background-color: #000000 !important;" class="py-3">
         <div class="container">
             <div class="d-flex flex-wrap align-items-center justify-content-between">
                 <h1 class="h3 my-2 text-light">
@@ -356,34 +358,39 @@
     </main>
     
     <!-- Footer -->
-    <footer class="bg-dark text-light py-4 mt-5">
+    <footer style="background-color: #000000 !important;" class="text-light py-4 mt-5">
         <div class="container">
             <div class="row">
-                <div class="col-md-6">
+                <div class="col-md-12">
                     <h5>Automated Essay Feedback System</h5>
                     <p>This tool uses advanced Natural Language Processing techniques to provide comprehensive feedback on your essays.</p>
-                </div>
-                <div class="col-md-3">
-                    <h5>Features</h5>
-                    <ul class="list-unstyled">
-                        <li><i class="fas fa-check-circle text-success me-2"></i>Grammar Analysis</li>
-                        <li><i class="fas fa-check-circle text-success me-2"></i>Structure Feedback</li>
-                        <li><i class="fas fa-check-circle text-success me-2"></i>Coherence Evaluation</li>
-                        <li><i class="fas fa-check-circle text-success me-2"></i>Vocabulary Assessment</li>
-                    </ul>
-                </div>
-                <div class="col-md-3">
-                    <img src="https://pixabay.com/get/g98307b1a40c14599f83c65cd6bc7431865347bb64e7555eaab814e682271accdd36dfae6cd7ce35794c8a6a9256b967ad9987742196e13f8c3fb0eb26161ad62_1280.jpg" 
-                         class="img-fluid rounded" alt="Essay Feedback" style="max-height: 150px;">
+                    <div class="row mt-3">
+                        <div class="col-md-4">
+                            <p><i class="fas fa-check-circle text-success me-2"></i>Grammar and Spelling – Correcting errors and suggesting improvements.</p>
+                        </div>
+                        <div class="col-md-4">
+                            <p><i class="fas fa-check-circle text-success me-2"></i>Sentence Structure – Offering feedback on sentence clarity, structure, and variety.</p>
+                        </div>
+                        <div class="col-md-4">
+                            <p><i class="fas fa-check-circle text-success me-2"></i>Coherence and Organization – Evaluating how logically structured and cohesive the essay is.</p>
+                        </div>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col-md-4">
+                            <p><i class="fas fa-check-circle text-success me-2"></i>Vocabulary and Style – Analyzing vocabulary richness, tone, and writing style.</p>
+                        </div>
+                        <div class="col-md-4">
+                            <p><i class="fas fa-check-circle text-success me-2"></i>Essay Scoring – Providing an overall score or grade, based on the quality of the essay.</p>
+                        </div>
+                        <div class="col-md-4">
+                            <p><i class="fas fa-check-circle text-success me-2"></i>Topic Relevance – Checking if the essay adheres to the given topic.</p>
+                        </div>
+                    </div>
                 </div>
             </div>
             <hr class="my-3">
-            <div class="d-flex justify-content-between align-items-center">
+            <div class="d-flex justify-content-center align-items-center">
                 <p class="mb-0">&copy; 2023 Automated Essay Feedback System</p>
-                <div>
-                    <img src="https://pixabay.com/get/gd3116b8f29e35afb60ae3278593c3e45c99efa5e187a8e05081be69ea13da85433cb01f1208e85c5f0746b119ea0c1fbfc7a945a48f0d1d9ac2f894b5ca72b91_1280.jpg" 
-                         class="img-fluid rounded-circle" alt="Educational Technology" style="max-height: 40px;">
-                </div>
             </div>
         </div>
     </footer>

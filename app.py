@@ -86,6 +86,9 @@ def analyze_essay():
             score_results
         )
         
+        # Convert numpy types to native Python types for JSON serialization
+        feedback = convert_numpy_types(feedback)
+        
         return jsonify(feedback)
         
     except Exception as e:

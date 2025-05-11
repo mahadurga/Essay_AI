@@ -5,6 +5,9 @@ body {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+    background-color: #000000 !important;
+    color: #ffffff !important;
+    font-family: 'Arial', sans-serif !important;
 }
 
 main {
@@ -15,10 +18,14 @@ main {
 .card {
     border-radius: 0.5rem;
     overflow: hidden;
+    background-color: #121212 !important;
+    border: 1px solid #333333 !important;
 }
 
 .card-header {
     font-weight: 500;
+    background-color: #1e1e1e !important;
+    border-bottom: 1px solid #333333 !important;
 }
 
 /* Textarea styles */
@@ -27,6 +34,9 @@ main {
     min-height: 200px;
     font-size: 1rem;
     line-height: 1.6;
+    background-color: #1a1a1a !important;
+    color: #ffffff !important;
+    border: 1px solid #333333 !important;
 }
 
 /* Score chart styles */
