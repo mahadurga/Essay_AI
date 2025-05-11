@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Automated Essay Feedback System</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css" rel="stylesheet">
+    <!-- Chart.js for visualizations -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/css/custom.css">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="bg-dark py-3">
+        <div class="container">
+            <div class="d-flex flex-wrap align-items-center justify-content-between">
+                <h1 class="h3 my-2 text-light">
+                    <i class="fas fa-pen-fancy me-2"></i>
+                    Automated Essay Feedback System
+                </h1>
+                <div class="text-end">
+                    <button id="helpButton" class="btn btn-outline-light me-2" data-bs-toggle="modal" data-bs-target="#helpModal">
+                        <i class="fas fa-question-circle me-1"></i> Help
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container my-4">
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <!-- Essay Input Section -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Essay Submission</h5>
+                        <div class="btn-group">
+                            <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Sample Essays
+                            </button>
+                            <ul class="dropdown-menu" id="sampleEssaysDropdown">
+                                <li><a class="dropdown-item sample-essay-item" href="#">Loading samples...</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <textarea id="essayInput" class="form-control" rows="12" placeholder="Paste or type your essay here..."></textarea>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <span id="wordCount" class="text-muted">0 words</span>
+                            </div>
+                            <div>
+                                <button id="clearButton" class="btn btn-outline-secondary me-2">
+                                    <i class="fas fa-eraser me-1"></i> Clear
+                                </button>
+                                <button id="analyzeButton" class="btn btn-primary">
+                                    <i class="fas fa-search me-1"></i> Analyze Essay
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <!-- Quick Info Card -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">About This Tool</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text">This Automated Essay Feedback System analyzes your essay and provides feedback on:</p>
+                        <ul class="fa-ul">
+                            <li><span class="fa-li"><i class="fas fa-check-circle text-success"></i></span> Grammar &amp; Spelling</li>
+                            <li><span class="fa-li"><i class="fas fa-check-circle text-success"></i></span> Sentence Structure</li>
+                            <li><span class="fa-li"><i class="fas fa-check-circle text-success"></i></span> Coherence &amp; Organization</li>
+                            <li><span class="fa-li"><i class="fas fa-check-circle text-success"></i></span> Vocabulary Usage</li>
+                            <li><span class="fa-li"><i class="fas fa-check-circle text-success"></i></span> Overall Essay Score</li>
+                        </ul>
+                        <p class="card-text">The analysis uses advanced NLP techniques to provide actionable feedback for improving your writing.</p>
+                    </div>
+                </div>
+                
+                <!-- Academic Writing Image -->
+                <div class="card shadow-sm">
+                    <img src="https://pixabay.com/get/gc80a9d29b23295b97112754ebbabcdfbfd21f73373aaad00f24e4190465a73a30d566cd67b1a2e8b7f01fbb57660bf93049cda7e719b98ed06e2a30f03a65be4_1280.jpg" 
+                         class="card-img-top rounded" alt="Academic Writing">
+                    <div class="card-footer text-center text-muted">
+                        Improve your academic writing with AI-powered feedback
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Results Section (initially hidden) -->
+        <div id="resultsSection" class="row mb-4 d-none">
+            <div class="col-12">
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-primary bg-gradient text-white">
+                        <h5 class="mb-0">Essay Feedback Results</h5>
+                    </div>
+                    <div class="card-body">
+                        <!-- Overall Score Card -->
+                        <div class="d-flex flex-wrap align-items-center justify-content-between mb-4 p-3 bg-dark rounded">
+                            <div>
+                                <h3 id="overallGrade" class="display-4 mb-0">--</h3>
+                                <p class="text-muted mb-0">Overall Grade</p>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <div>
+                                    <h3 id="overallScore" class="display-4 mb-0">--</h3>
+                                    <p class="text-muted mb-0">Score out of 10</p>
+                                </div>
+                                <div class="ms-4 score-chart-container">
+                                    <canvas id="scoreChart" width="180" height="180"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Summary -->
+                        <div class="mb-4">
+                            <h5>Summary</h5>
+                            <p id="feedbackSummary" class="lead">Analysis complete. Here's your feedback.</p>
+                            <div id="priorityImprovements" class="mt-3">
+                                <h6>Priority Improvements:</h6>
+                                <ul class="fa-ul" id="priorityList">
+                                    <li><span class="fa-li"><i class="fas fa-arrow-right"></i></span>Loading improvements...</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <!-- Feedback Tabs -->
+                        <ul class="nav nav-tabs" id="feedbackTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="grammar-tab" data-bs-toggle="tab" data-bs-target="#grammar" type="button" role="tab" aria-controls="grammar" aria-selected="true">
+                                    <i class="fas fa-spell-check me-1"></i> Grammar &amp; Spelling
+                                    <span id="grammarBadge" class="badge rounded-pill bg-danger ms-1">0</span>
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="structure-tab" data-bs-toggle="tab" data-bs-target="#structure" type="button" role="tab" aria-controls="structure" aria-selected="false">
+                                    <i class="fas fa-paragraph me-1"></i> Sentence Structure
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="coherence-tab" data-bs-toggle="tab" data-bs-target="#coherence" type="button" role="tab" aria-controls="coherence" aria-selected="false">
+                                    <i class="fas fa-sitemap me-1"></i> Coherence
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="vocabulary-tab" data-bs-toggle="tab" data-bs-target="#vocabulary" type="button" role="tab" aria-controls="vocabulary" aria-selected="false">
+                                    <i class="fas fa-book me-1"></i> Vocabulary
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="text-tab" data-bs-toggle="tab" data-bs-target="#text" type="button" role="tab" aria-controls="text" aria-selected="false">
+                                    <i class="fas fa-file-alt me-1"></i> Marked Text
+                                </button>
+                            </li>
+                        </ul>
+                        
+                        <div class="tab-content pt-3" id="feedbackTabContent">
+                            <!-- Grammar Tab -->
+                            <div class="tab-pane fade show active" id="grammar" role="tabpanel" aria-labelledby="grammar-tab">
+                                <div class="row mb-3">
+                                    <div class="col-md-4">
+                                        <div class="card">
+                                            <div class="card-body text-center">
+                                                <h2 id="grammarScore" class="display-5">--</h2>
+                                                <p class="text-muted mb-0">Grammar Score</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-8">
+                                        <h6>Grammar Suggestions:</h6>
+                                        <ul class="list-group" id="grammarSuggestions">
+                                            <li class="list-group-item">Loading suggestions...</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                
+                                <div id="grammarIssues">
+                                    <h6>Grammar Issues:</h6>
+                                    <div class="table-responsive">
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>Issue</th>
+                                                    <th>Context</th>
+                                                    <th>Suggested Fix</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="grammarIssuesTable">
+                                                <tr>
+                                                    <td colspan="3" class="text-center">No grammar issues to display</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Structure Tab -->
+                            <div class="tab-pane fade" id="structure" role="tabpanel" aria-labelledby="structure-tab">
+                                <div class="row mb-3">
+                                    <div class="col-md-4">
+                                        <div class="card">
+                                            <div class="card-body text-center">
+                                                <h2 id="structureScore" class="display-5">--</h2>
+                                                <p class="text-muted mb-0">Structure Score</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-8">
+                                        <h6>Structure Metrics:</h6>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="metric-card">
+                                                    <span class="metric-title">Avg. Sentence Length</span>
+                                                    <span id="avgSentenceLength" class="metric-value">--</span>
+                                                    <span class="metric-unit">words</span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="metric-card">
+                                                    <span class="metric-title">Reading Ease</span>
+                                                    <span id="readabilityScore" class="metric-value">--</span>
+                                                    <span class="metric-unit">Flesch score</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <h6 class="mt-3">Structure Suggestions:</h6>
+                                        <ul class="list-group" id="structureSuggestions">
+                                            <li class="list-group-item">Loading suggestions...</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Coherence Tab -->
+                            <div class="tab-pane fade" id="coherence" role="tabpanel" aria-labelledby="coherence-tab">
+                                <div class="row mb-3">
+                                    <div class="col-md-4">
+                                        <div class="card">
+                                            <div class="card-body text-center">
+                                                <h2 id="coherenceScore" class="display-5">--</h2>
+                                                <p class="text-muted mb-0">Coherence Score</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-8">
+                                        <h6>Essay Structure:</h6>
+                                        <div class="d-flex mb-3">
+                                            <div class="me-3">
+                                                <span class="structure-label">Introduction</span>
+                                                <span id="hasIntroduction" class="structure-indicator">
+                                                    <i class="fas fa-check-circle text-success"></i>
+                                                </span>
+                                            </div>
+                                            <div>
+                                                <span class="structure-label">Conclusion</span>
+                                                <span id="hasConclusion" class="structure-indicator">
+                                                    <i class="fas fa-check-circle text-success"></i>
+                                                </span>
+                                            </div>
+                                        </div>
+                                        
+                                        <h6>Coherence Suggestions:</h6>
+                                        <ul class="list-group" id="coherenceSuggestions">
+                                            <li class="list-group-item">Loading suggestions...</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Vocabulary Tab -->
+                            <div class="tab-pane fade" id="vocabulary" role="tabpanel" aria-labelledby="vocabulary-tab">
+                                <div class="row mb-3">
+                                    <div class="col-md-4">
+                                        <div class="card">
+                                            <div class="card-body text-center">
+                                                <h2 id="vocabularyScore" class="display-5">--</h2>
+                                                <p class="text-muted mb-0">Vocabulary Score</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-8">
+                                        <h6>Vocabulary Metrics:</h6>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="metric-card">
+                                                    <span class="metric-title">Unique Words</span>
+                                                    <span id="uniqueWords" class="metric-value">--</span>
+                                                    <span class="metric-unit">of <span id="totalWords">--</span></span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="metric-card">
+                                                    <span class="metric-title">Type-Token Ratio</span>
+                                                    <span id="typeTokenRatio" class="metric-value">--</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <h6 class="mt-3">Most Used Words:</h6>
+                                        <div id="mostCommonWords" class="most-common-words">
+                                            Loading word frequency...
+                                        </div>
+                                        
+                                        <h6 class="mt-3">Vocabulary Suggestions:</h6>
+                                        <ul class="list-group" id="vocabularySuggestions">
+                                            <li class="list-group-item">Loading suggestions...</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Marked Text Tab -->
+                            <div class="tab-pane fade" id="text" role="tabpanel" aria-labelledby="text-tab">
+                                <div class="marked-text-container p-3 bg-dark rounded">
+                                    <h6>Your Essay with Marked Issues:</h6>
+                                    <div id="markedText" class="marked-text">
+                                        <p>Your analyzed text will appear here...</p>
+                                    </div>
+                                </div>
+                                <div class="mt-3">
+                                    <small class="text-muted">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        Highlighted text indicates grammar or spelling issues. Hover over highlighted text to see suggestions.
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Loading Spinner -->
+        <div id="loadingSpinner" class="text-center d-none">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">Analyzing your essay... This may take a moment.</p>
+            <div class="progress mt-2" style="height: 10px;">
+                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+        </div>
+    </main>
+    
+    <!-- Footer -->
+    <footer class="bg-dark text-light py-4 mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>Automated Essay Feedback System</h5>
+                    <p>This tool uses advanced Natural Language Processing techniques to provide comprehensive feedback on your essays.</p>
+                </div>
+                <div class="col-md-3">
+                    <h5>Features</h5>
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-check-circle text-success me-2"></i>Grammar Analysis</li>
+                        <li><i class="fas fa-check-circle text-success me-2"></i>Structure Feedback</li>
+                        <li><i class="fas fa-check-circle text-success me-2"></i>Coherence Evaluation</li>
+                        <li><i class="fas fa-check-circle text-success me-2"></i>Vocabulary Assessment</li>
+                    </ul>
+                </div>
+                <div class="col-md-3">
+                    <img src="https://pixabay.com/get/g98307b1a40c14599f83c65cd6bc7431865347bb64e7555eaab814e682271accdd36dfae6cd7ce35794c8a6a9256b967ad9987742196e13f8c3fb0eb26161ad62_1280.jpg" 
+                         class="img-fluid rounded" alt="Essay Feedback" style="max-height: 150px;">
+                </div>
+            </div>
+            <hr class="my-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <p class="mb-0">&copy; 2023 Automated Essay Feedback System</p>
+                <div>
+                    <img src="https://pixabay.com/get/gd3116b8f29e35afb60ae3278593c3e45c99efa5e187a8e05081be69ea13da85433cb01f1208e85c5f0746b119ea0c1fbfc7a945a48f0d1d9ac2f894b5ca72b91_1280.jpg" 
+                         class="img-fluid rounded-circle" alt="Educational Technology" style="max-height: 40px;">
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Help Modal -->
+    <div class="modal fade" id="helpModal" tabindex="-1" aria-labelledby="helpModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="helpModalLabel">How to Use the Essay Feedback System</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h6>Getting Started</h6>
+                            <ol>
+                                <li>Paste or type your essay in the text area</li>
+                                <li>Click "Analyze Essay" to start the analysis</li>
+                                <li>Review the comprehensive feedback provided</li>
+                            </ol>
+                            
+                            <h6>Understanding Your Results</h6>
+                            <p>The system analyzes your essay across four key dimensions:</p>
+                            <ul>
+                                <li><strong>Grammar & Spelling:</strong> Identifies grammatical errors and spelling mistakes</li>
+                                <li><strong>Sentence Structure:</strong> Evaluates sentence length, complexity, and readability</li>
+                                <li><strong>Coherence & Organization:</strong> Assesses logical flow and organization of ideas</li>
+                                <li><strong>Vocabulary:</strong> Analyzes vocabulary richness and word choice</li>
+                            </ul>
+                            
+                            <h6>Tips for Best Results</h6>
+                            <ul>
+                                <li>Submit essays that are at least 200 words for more accurate analysis</li>
+                                <li>Include proper paragraph breaks for better coherence evaluation</li>
+                                <li>Try sample essays to see how the system works</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-4">
+                            <img src="https://pixabay.com/get/g5682967580282ab61412b3eecb5311187d1803b7ee43143b3b0b09f1fc1fe6733d01d000b9aa91ea3148be862ebe4c930c464cbb0d3bba5a9cbf371a45ea4530_1280.jpg" class="img-fluid rounded" alt="Educational Technology">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <!-- Custom JS -->
+    <script src="/static/js/essay_feedback.js"></script>
+</body>
+</html>
