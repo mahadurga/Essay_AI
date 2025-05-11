@@ -12,6 +12,7 @@ dependencies = [
     "scikit-learn>=1.6.1",
     "spacy>=3.8.5",
     "textstat>=0.7.7",
+    "waitress>=3.0.2",
 ]
 
 [[tool.uv.index]]

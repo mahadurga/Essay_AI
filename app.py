@@ -52,10 +52,14 @@ def analyze_essay():
     """
     try:
         data = request.get_json()
+        if not data:
+            return jsonify({'error': 'Invalid JSON data'}), 400
+            
         essay_text = data.get('essay', '')
-
         if not essay_text:
             return jsonify({'error': 'No essay text provided'}), 400
+            
+        logger.info(f"Starting analysis for essay of length: {len(essay_text)}")
 
         logger.debug(f"Received essay with length: {len(essay_text)} characters")
 
