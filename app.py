@@ -4,7 +4,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error, r2_score
 import numpy as np
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template, send_from_directory
 
 class SimpleModel:
     def __init__(self):
@@ -23,10 +23,10 @@ class SimpleModel:
             df = pd.read_csv(csv_file)
 
             # Handle missing values
-            df = df.dropna(subset=['EssayText', 'Overall'])
+            df = df.dropna(subset=['Essay', 'Overall'])
 
             # Separate features (essays) and target (overall score)
-            essays = df['EssayText']
+            essays = df['Essay']
             overall_scores = df['Overall']
 
             # Split data into training and testing sets
@@ -106,7 +106,7 @@ model.train_model('ielts_writing_dataset.csv')
 
 @app.route('/')
 def index():
-    return app.send_from_directory('templates', 'index.html')
+    return render_template('index.html')
 
 @app.errorhandler(404)
 def not_found(e):
