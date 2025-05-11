@@ -18,15 +18,9 @@ except Exception as e:
 # Initialize spaCy
 try:
     nlp = spacy.load('en_core_web_sm')
-except Exception as e:
-    logger.error(f"Error loading spaCy model: {str(e)}")
-    try:
-        # Fall back to loading a different model if needed
-        import en_core_web_sm
-        nlp = en_core_web_sm.load()
-    except Exception as e2:
-        logger.error(f"Error loading fallback spaCy model: {str(e2)}")
-        nlp = None
+except OSError:
+    spacy.cli.download('en_core_web_sm')
+    nlp = spacy.load('en_core_web_sm')
 
 def analyze_sentence_structure(text):
     """
