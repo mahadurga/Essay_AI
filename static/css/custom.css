@@ -65,7 +65,7 @@ main {
 .metric-value {
     font-size: 1.75rem;
     font-weight: 600;
-    color: var(--bs-primary);
+    color: var(--bs-white);
 }
 
 .metric-unit {
@@ -100,8 +100,8 @@ main {
 }
 
 .word-frequency .count {
-    background-color: var(--bs-primary);
-    color: var(--bs-white);
+    background-color: var(--bs-white);
+    color: var(--bs-dark);
     display: inline-block;
     width: 1.5rem;
     height: 1.5rem;
@@ -137,7 +137,7 @@ main {
     left: 0;
     background-color: var(--bs-dark);
     color: var(--bs-light);
-    border: 1px solid var(--bs-primary);
+    border: 1px solid var(--bs-white);
     border-radius: 0.25rem;
     padding: 0.5rem;
     font-size: 0.875rem;

@@ -3,6 +3,7 @@ import logging
 import concurrent.futures
 import json
 import numpy as np
+import pandas as pd
 from flask import Flask, render_template, request, jsonify, Response
 from modules.grammar_checker import check_grammar_spelling
 from modules.sentence_structure import analyze_sentence_structure
@@ -10,6 +11,7 @@ from modules.coherence_analyzer import analyze_coherence
 from modules.vocabulary_analyzer import analyze_vocabulary
 from modules.essay_scorer import score_essay
 from modules.feedback_generator import generate_feedback
+from modules.dataset_loader import get_sample_essays_from_dataset
 
 # Function to convert numpy types to Python native types
 def convert_numpy_types(obj):
@@ -100,22 +102,25 @@ def analyze_essay():
 
 @app.route('/sample_essays', methods=['GET'])
 def get_sample_essays():
-    """Return a list of sample essays for demonstration"""
-    samples = [
-        {
-            "title": "The Impact of Technology on Education",
-            "text": "Technology has revolutionized the educational landscape in numerous ways. Digital classrooms, online resources, and interactive learning tools have transformed how students engage with content. However, this digital transformation also presents challenges such as digital divides and concerns about screen time. Despite these concerns, the benefits of educational technology—including personalized learning, global connectivity, and enhanced engagement—suggest that technological integration in education will continue to evolve. The key challenge for educators is to leverage technology effectively while maintaining the human elements of teaching and learning that are essential to education."
-        },
-        {
-            "title": "Climate Change: A Global Crisis",
-            "text": "Climate change represents one of the most pressing challenges facing humanity today. Rising global temperatures, extreme weather events, and melting ice caps provide undeniable evidence of this phenomenon. Human activities, particularly the burning of fossil fuels and deforestation, have significantly contributed to greenhouse gas emissions, exacerbating the natural warming cycle. The consequences of unchecked climate change are severe, potentially leading to habitat destruction, food insecurity, and rising sea levels. Addressing this crisis requires coordinated international efforts to reduce carbon emissions, transition to renewable energy sources, and implement sustainable practices across all sectors of society."
-        },
-        {
-            "title": "The Role of Art in Society",
-            "text": "Art has always played a vital role in human societies throughout history. As a form of expression, it transcends cultural and linguistic barriers, allowing for the communication of complex ideas and emotions. Art serves as a mirror to society, reflecting its values, concerns, and aspirations while simultaneously challenging conventions and provoking thought. Beyond its cultural significance, art contributes to individual well-being by fostering creativity, critical thinking, and emotional intelligence. In contemporary society, despite the prevalence of technology and practical concerns, art remains essential as a means of preserving cultural heritage, stimulating innovation, and enriching the human experience."
-        }
-    ]
-    return jsonify(samples)
+    """Return a list of sample essays from the IELTS dataset"""
+    try:
+        # Get samples from the IELTS dataset
+        samples = get_sample_essays_from_dataset(5)
+        return jsonify(samples)
+    except Exception as e:
+        logger.error(f"Error fetching sample essays: {str(e)}")
+        # Fallback samples if dataset loading fails
+        samples = [
+            {
+                "title": "The Impact of Technology on Education",
+                "text": "Technology has revolutionized the educational landscape in numerous ways. Digital classrooms, online resources, and interactive learning tools have transformed how students engage with content. However, this digital transformation also presents challenges such as digital divides and concerns about screen time. Despite these concerns, the benefits of educational technology—including personalized learning, global connectivity, and enhanced engagement—suggest that technological integration in education will continue to evolve. The key challenge for educators is to leverage technology effectively while maintaining the human elements of teaching and learning that are essential to education."
+            },
+            {
+                "title": "Climate Change: A Global Crisis",
+                "text": "Climate change represents one of the most pressing challenges facing humanity today. Rising global temperatures, extreme weather events, and melting ice caps provide undeniable evidence of this phenomenon. Human activities, particularly the burning of fossil fuels and deforestation, have significantly contributed to greenhouse gas emissions, exacerbating the natural warming cycle. The consequences of unchecked climate change are severe, potentially leading to habitat destruction, food insecurity, and rising sea levels. Addressing this crisis requires coordinated international efforts to reduce carbon emissions, transition to renewable energy sources, and implement sustainable practices across all sectors of society."
+            }
+        ]
+        return jsonify(samples)
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
