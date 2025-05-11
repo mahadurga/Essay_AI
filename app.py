@@ -104,6 +104,14 @@ model = SimpleModel()
 # Train the model when app starts
 model.train_model('ielts_writing_dataset.csv')
 
+@app.route('/')
+def index():
+    return app.send_from_directory('templates', 'index.html')
+
+@app.errorhandler(404)
+def not_found(e):
+    return "404 - Page not found", 404
+
 @app.route('/analyze', methods=['POST'])
 def analyze_essay():
     try:
