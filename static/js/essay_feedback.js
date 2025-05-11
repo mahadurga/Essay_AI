@@ -222,8 +222,7 @@ function displayFeedback(feedback) {
     // Update chart data
     updateScoreChart(overallAssessment.score_breakdown);
     
-    // Priority improvements
-    displayPriorityImprovements(feedback.priority_improvements);
+    
     
     // Grammar & spelling
     const grammarFeedback = feedback.grammar_feedback;
