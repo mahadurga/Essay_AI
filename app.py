@@ -1,177 +1,115 @@
-import os
-import logging
-import concurrent.futures
-import json
-import numpy as np
 import pandas as pd
-from flask import Flask, render_template, request, jsonify, Response
-from modules.grammar_checker import check_grammar_spelling
-from modules.sentence_structure import analyze_sentence_structure
-from modules.coherence_analyzer import analyze_coherence
-from modules.vocabulary_analyzer import analyze_vocabulary
-from modules.essay_scorer import score_essay
-from modules.feedback_generator import generate_feedback
-from modules.dataset_loader import get_sample_essays_from_dataset
-from modules.model_trainer import model_trainer
+from sklearn.model_selection import train_test_split
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_error, r2_score
+import numpy as np
 
-# Function to convert numpy types to Python native types
-def convert_numpy_types(obj):
-    if isinstance(obj, np.integer):
-        return int(obj)
-    elif isinstance(obj, np.floating):
-        return float(obj)
-    elif isinstance(obj, np.ndarray):
-        return obj.tolist()
-    elif isinstance(obj, dict):
-        return {k: convert_numpy_types(v) for k, v in obj.items()}
-    elif isinstance(obj, list):
-        return [convert_numpy_types(i) for i in obj]
-    return obj
+class SimpleModel:
+    def __init__(self):
+        self.model = None
+        self.vectorizer = None
 
-# Configure logging
-logging.basicConfig(level=logging.DEBUG)
-logger = logging.getLogger(__name__)
+    def train_model(self, csv_file):
+        """
+        Trains a linear regression model on the essay data.
 
-# Initialize Flask app
-app = Flask(__name__)
-app.secret_key = os.environ.get("SESSION_SECRET", "dev_key_for_testing")
+        Args:
+            csv_file (str): Path to the CSV file containing essay data.
+        """
+        try:
+            # Load the dataset
+            df = pd.read_csv(csv_file)
 
-# Thread pool executor for parallel processing
-executor = concurrent.futures.ThreadPoolExecutor(max_workers=5)
+            # Handle missing values
+            df = df.dropna(subset=['EssayText', 'Overall'])
 
-@app.route('/')
-def index():
-    """Render the main application page"""
-    return render_template('index.html')
+            # Separate features (essays) and target (overall score)
+            essays = df['EssayText']
+            overall_scores = df['Overall']
 
-@app.route('/analyze', methods=['POST'])
-def analyze_essay():
-    """
-    Analyze the submitted essay using multithreading for parallel processing
-    Returns JSON with detailed feedback
-    """
-    try:
-        data = request.get_json()
-        if not data:
-            return jsonify({'error': 'Invalid JSON data'}), 400
-            
-        essay_text = data.get('essay', '')
-        if not essay_text:
-            return jsonify({'error': 'No essay text provided'}), 400
-            
-        logger.info(f"Starting analysis for essay of length: {len(essay_text)}")
+            # Split data into training and testing sets
+            essays_train, essays_test, scores_train, scores_test = train_test_split(
+                essays, overall_scores, test_size=0.2, random_state=42
+            )
 
-        logger.debug(f"Received essay with length: {len(essay_text)} characters")
+            # Create TF-IDF vectorizer
+            self.vectorizer = TfidfVectorizer(stop_words='english', max_df=0.7)
 
-        # Create a thread for each analysis component
-        grammar_future = executor.submit(check_grammar_spelling, essay_text)
-        structure_future = executor.submit(analyze_sentence_structure, essay_text)
-        coherence_future = executor.submit(analyze_coherence, essay_text)
-        vocabulary_future = executor.submit(analyze_vocabulary, essay_text)
+            # Fit and transform the training essays
+            essays_train_tfidf = self.vectorizer.fit_transform(essays_train)
 
-        # Get results from all threads
-        grammar_results = grammar_future.result()
-        structure_results = structure_future.result()
-        coherence_results = coherence_future.result()
-        vocabulary_results = vocabulary_future.result()
+            # Transform the testing essays
+            essays_test_tfidf = self.vectorizer.transform(essays_test)
 
-        # Calculate overall score based on component results
-        score_results = score_essay(
-            grammar_results,
-            structure_results,
-            coherence_results,
-            vocabulary_results
-        )
+            # Initialize and train the linear regression model
+            self.model = LinearRegression()
+            self.model.fit(essays_train_tfidf, scores_train)
 
-        # Generate comprehensive feedback
-        feedback = generate_feedback(
-            essay_text,
-            grammar_results,
-            structure_results,
-            coherence_results,
-            vocabulary_results,
-            score_results
-        )
+            # Evaluate the model
+            self.evaluate_model(essays_test_tfidf, scores_test)
 
-        # Convert numpy types to native Python types for JSON serialization
-        feedback = convert_numpy_types(feedback)
+        except Exception as e:
+            print(f"Error training the model: {e}")
 
-        return jsonify(feedback)
+    def evaluate_model(self, essays_test_tfidf, scores_test):
+        """
+        Evaluates the trained model on the test set.
 
-    except Exception as e:
-        logger.error(f"Error analyzing essay: {str(e)}", exc_info=True)
-        return jsonify({
-            'error': 'An error occurred while analyzing the essay',
-            'message': str(e)
-        }), 500
+        Args:
+            essays_test_tfidf: TF-IDF vectorized test essays.
+            scores_test: Actual overall scores for the test essays.
+        """
+        try:
+            # Make predictions on the test set
+            scores_pred = self.model.predict(essays_test_tfidf)
 
-@app.route('/generate_thesis', methods=['POST'])
-def generate_thesis_endpoint():
-    """
-    Generate a thesis statement or summary based on the submitted essay
+            # Calculate evaluation metrics
+            mse = mean_squared_error(scores_test, scores_pred)
+            r2 = r2_score(scores_test, scores_pred)
 
-    Returns:
-        JSON with generated thesis statement and summary
-    """
-    try:
-        data = request.get_json()
-        essay_text = data.get('essay', '')
-        style = data.get('style', 'academic')  # academic, concise, descriptive
-        summary_length = data.get('summary_length', 'medium')  # short, medium, long
+            print(f"Mean Squared Error: {mse}")
+            print(f"R-squared: {r2}")
 
-        if not essay_text:
-            return jsonify({'error': 'No essay text provided'}), 400
+        except Exception as e:
+            print(f"Error evaluating the model: {e}")
 
-        logger.debug(f"Generating thesis for essay with length: {len(essay_text)} characters")
+    def predict_score(self, essay_text):
+        """
+        Predicts the overall score for a given essay text.
 
-        # Import here to avoid circular imports
-        from modules.thesis_generator import generate_thesis, generate_summary, identify_main_argument
+        Args:
+            essay_text (str): The essay text to predict the score for.
 
-        # Get main argument information
-        argument_info = identify_main_argument(essay_text)
+        Returns:
+            float: The predicted overall score.
+        """
+        try:
+            # Transform the essay text using the trained vectorizer
+            essay_tfidf = self.vectorizer.transform([essay_text])
 
-        # Generate thesis and summary
-        thesis = generate_thesis(essay_text, style)
-        summary = generate_summary(essay_text, summary_length)
+            # Predict the score using the trained model
+            predicted_score = self.model.predict(essay_tfidf)[0]
 
-        # Prepare response
-        response = {
-            'thesis_statement': thesis,
-            'summary': summary,
-            'main_topic': argument_info['main_topic'],
-            'keywords': argument_info['keywords'],
-            'potential_topics': argument_info['potential_topics']
-        }
+            return predicted_score
 
-        return jsonify(response)
-    except Exception as e:
-        logger.error(f"Error generating thesis: {str(e)}", exc_info=True)
-        return jsonify({
-            'error': 'An error occurred while generating thesis',
-            'message': str(e)
-        }), 500
+        except Exception as e:
+            print(f"Error predicting the score: {e}")
+            return None
 
-@app.route('/sample_essays', methods=['GET'])
-def get_sample_essays():
-    """Return a list of sample essays from the IELTS dataset"""
-    try:
-        # Get samples from the IELTS dataset
-        samples = get_sample_essays_from_dataset(5)
-        return jsonify(samples)
-    except Exception as e:
-        logger.error(f"Error fetching sample essays: {str(e)}")
-        # Fallback samples if dataset loading fails
-        samples = [
-            {
-                "title": "The Impact of Technology on Education",
-                "text": "Technology has revolutionized the educational landscape in numerous ways. Digital classrooms, online resources, and interactive learning tools have transformed how students engage with content. However, this digital transformation also presents challenges such as digital divides and concerns about screen time. Despite these concerns, the benefits of educational technology—including personalized learning, global connectivity, and enhanced engagement—suggest that technological integration in education will continue to evolve. The key challenge for educators is to leverage technology effectively while maintaining the human elements of teaching and learning that are essential to education."
-            },
-            {
-                "title": "Climate Change: A Global Crisis",
-                "text": "Climate change represents one of the most pressing challenges facing humanity today. Rising global temperatures, extreme weather events, and melting ice caps provide undeniable evidence of this phenomenon. Human activities, particularly the burning of fossil fuels and deforestation, have significantly contributed to greenhouse gas emissions, exacerbating the natural warming cycle. The consequences of unchecked climate change are severe, potentially leading to habitat destruction, food insecurity, and rising sea levels. Addressing this crisis requires coordinated international efforts to reduce carbon emissions, transition to renewable energy sources, and implement sustainable practices across all sectors of society."
-            }
-        ]
-        return jsonify(samples)
-
+# Example usage:
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    # Create an instance of the SimpleModel
+    simple_model = SimpleModel()
+
+    # Train the model using the essay data
+    simple_model.train_model('ielts_writing_dataset.csv')
+
+    # Example essay for prediction
+    example_essay = "Technology has greatly improved our lives. It has made communication easier and faster, and it has also provided us with access to a wealth of information. However, technology has also had some negative effects. It has made us more isolated and less active, and it has also led to new forms of crime."
+
+    # Predict the score for the example essay
+    predicted_score = simple_model.predict_score(example_essay)
+
+    if predicted_score is not None:
+        print(f"Predicted Overall Score: {predicted_score}")
