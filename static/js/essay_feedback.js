@@ -123,16 +123,9 @@ function loadSampleEssays() {
  * @param {string} essayText - The essay text to analyze
  */
 function analyzeEssay(essayText) {
-    // Show loading spinner, hide results
-    const loadingSpinner = document.getElementById('loadingSpinner');
+    // Hide results while processing
     const resultsSection = document.getElementById('resultsSection');
-    
-    loadingSpinner.classList.remove('d-none');
     resultsSection.classList.add('d-none');
-    
-    // Animate progress bar
-    const progressBar = loadingSpinner.querySelector('.progress-bar');
-    progressBar.style.width = '0%';
     
     // Send request to server
     fetch('/analyze', {

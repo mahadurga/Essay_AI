@@ -5,6 +5,10 @@ from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error, r2_score
 import numpy as np
 from flask import Flask, request, jsonify, render_template, send_from_directory
+from flask_cors import CORS
+
+app = Flask(__name__)
+CORS(app)
 
 class SimpleModel:
     def __init__(self):
