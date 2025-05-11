@@ -100,6 +100,52 @@ def analyze_essay():
             'message': str(e)
         }), 500
 
+@app.route('/generate_thesis', methods=['POST'])
+def generate_thesis_endpoint():
+    """
+    Generate a thesis statement or summary based on the submitted essay
+    
+    Returns:
+        JSON with generated thesis statement and summary
+    """
+    try:
+        data = request.get_json()
+        essay_text = data.get('essay', '')
+        style = data.get('style', 'academic')  # academic, concise, descriptive
+        summary_length = data.get('summary_length', 'medium')  # short, medium, long
+        
+        if not essay_text:
+            return jsonify({'error': 'No essay text provided'}), 400
+        
+        logger.debug(f"Generating thesis for essay with length: {len(essay_text)} characters")
+        
+        # Import here to avoid circular imports
+        from modules.thesis_generator import generate_thesis, generate_summary, identify_main_argument
+        
+        # Get main argument information
+        argument_info = identify_main_argument(essay_text)
+        
+        # Generate thesis and summary
+        thesis = generate_thesis(essay_text, style)
+        summary = generate_summary(essay_text, summary_length)
+        
+        # Prepare response
+        response = {
+            'thesis_statement': thesis,
+            'summary': summary,
+            'main_topic': argument_info['main_topic'],
+            'keywords': argument_info['keywords'],
+            'potential_topics': argument_info['potential_topics']
+        }
+        
+        return jsonify(response)
+    except Exception as e:
+        logger.error(f"Error generating thesis: {str(e)}", exc_info=True)
+        return jsonify({
+            'error': 'An error occurred while generating thesis',
+            'message': str(e)
+        }), 500
+
 @app.route('/sample_essays', methods=['GET'])
 def get_sample_essays():
     """Return a list of sample essays from the IELTS dataset"""
