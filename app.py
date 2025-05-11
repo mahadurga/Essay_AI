@@ -1,13 +1,29 @@
 import os
 import logging
 import concurrent.futures
-from flask import Flask, render_template, request, jsonify
+import json
+import numpy as np
+from flask import Flask, render_template, request, jsonify, Response
 from modules.grammar_checker import check_grammar_spelling
 from modules.sentence_structure import analyze_sentence_structure
 from modules.coherence_analyzer import analyze_coherence
 from modules.vocabulary_analyzer import analyze_vocabulary
 from modules.essay_scorer import score_essay
 from modules.feedback_generator import generate_feedback
+
+# Function to convert numpy types to Python native types
+def convert_numpy_types(obj):
+    if isinstance(obj, np.integer):
+        return int(obj)
+    elif isinstance(obj, np.floating):
+        return float(obj)
+    elif isinstance(obj, np.ndarray):
+        return obj.tolist()
+    elif isinstance(obj, dict):
+        return {k: convert_numpy_types(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [convert_numpy_types(i) for i in obj]
+    return obj
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
